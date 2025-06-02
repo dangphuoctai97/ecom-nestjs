@@ -5,7 +5,7 @@ const saltRounds = 10
 
 @Injectable()
 export class HashingService {
-  hashing(value: string) {
+  hash(value: string) {
     return hash(value, saltRounds)
   }
 
