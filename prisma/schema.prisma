@@ -120,7 +120,7 @@ model VerificationCode {
   id    Int                  @id @default(autoincrement())
   email String               @unique @db.VarChar(500)
   code  String               @db.VarChar(50)
-  type  RegistrationCodeType
+  type  VerificationCodeType
 
   expiresAt DateTime
   createdAt DateTime @default(now())
@@ -440,7 +440,7 @@ enum OrderStatus {
   CANCELLED
 }
 
-enum RegistrationCodeType {
+enum VerificationCodeType {
   REGISTER
   FORGOT_PASSWORD
 }
