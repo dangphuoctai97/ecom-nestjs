@@ -10,6 +10,7 @@ import { HashingService } from 'src/shared/services/hashing.service'
 import { PrismaService } from 'src/shared/services/prisma.service'
 import { TokenService } from 'src/shared/services/token.service'
 import ms from 'ms'
+import { TypeOfVerificationCode } from 'src/shared/constants/auth.constant'
 @Injectable()
 export class AuthService {
   constructor(
@@ -22,6 +23,33 @@ export class AuthService {
   ) {}
   async register(body: RegisterBodyType) {
     try {
+      //Tìm trong DB xem có OTP hay không
+      const verificationCode = await this.authRepository.findUniqueVerificationCode({
+        email: body.email,
+        code: body.code,
+        type: TypeOfVerificationCode.REGISTER,
+      })
+
+      //Không có thì show lỗi
+      if (!verificationCode) {
+        throw new UnprocessableEntityException([
+          {
+            message: 'Mã OTP không hợp lệ',
+            path: 'code',
+          },
+        ])
+      }
+
+      //Có mà hết hạn
+      if (verificationCode.expiresAt < new Date()) {
+        throw new UnprocessableEntityException([
+          {
+            message: 'Mã OTP đã hết hạn',
+            path: 'code',
+          },
+        ])
+      }
+
       const clientRoleId = await this.rolesService.getClientRoleId()
       const hashedPassword = await this.hashingService.hash(body.password)
       return await this.authRepository.createUser({
