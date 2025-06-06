@@ -11,6 +11,7 @@ import { PrismaService } from 'src/shared/services/prisma.service'
 import { TokenService } from 'src/shared/services/token.service'
 import ms from 'ms'
 import { TypeOfVerificationCode } from 'src/shared/constants/auth.constant'
+import { EmailService } from 'src/shared/services/email.service'
 @Injectable()
 export class AuthService {
   constructor(
@@ -20,6 +21,7 @@ export class AuthService {
     private readonly rolesService: RolesService,
     private readonly authRepository: AuthRepository,
     private readonly sharedUserRepository: SharedUserRepository,
+    private readonly emailService: EmailService,
   ) {}
   async register(body: RegisterBodyType) {
     try {
@@ -82,13 +84,28 @@ export class AuthService {
       })
     }
 
-    //2. Nếu chưa thì tạo 1 OTP và gửi vào email người dùng đăng ký
+    //2. Nếu chưa thì tạo 1 OTP và lưu vào DB
     const otp = generateOTP()
     const verificationCode = this.authRepository.createVerificationCode({
       ...body,
       code: otp,
       expiresAt: addMilliseconds(new Date(), ms(envConfig.OTP_EXPIRES_IN)),
     })
+
+    //3. Gửi mã OTP vào email người dùng đăng ký
+    const { error } = await this.emailService.sendOTP({
+      email: body.email,
+      code: otp,
+    })
+
+    if (error) {
+      throw new UnprocessableEntityException([
+        {
+          message: 'Gửi mã OTP thất bại',
+          path: 'code',
+        },
+      ])
+    }
     return verificationCode
   }
 
