@@ -15,7 +15,7 @@ export class TokenService {
 
   signAccessToken(payload: AccessTokenPayloadCreate) {
     return this.jwtService.sign(
-      { payload, uuid: uuidv4() },
+      { ...payload, uuid: uuidv4() },
       {
         secret: envConfig.ACCESS_TOKEN_SECRET,
         expiresIn: envConfig.ACCESS_TOKEN_EXPIRES_IN,
@@ -26,7 +26,7 @@ export class TokenService {
 
   signRefreshToken(payload: RefreshTokenPayloadCreate) {
     return this.jwtService.sign(
-      { payload, uuid: uuidv4() },
+      { ...payload, uuid: uuidv4() },
       {
         secret: envConfig.REFRESH_TOKEN_SECRET,
         expiresIn: envConfig.REFRESH_TOKEN_EXPIRES_IN,
