@@ -73,7 +73,7 @@ export class AuthService {
     }
   }
 
-  async sendOTP(body: SendOTPBodyType) {
+  async sendOTP(body: SendOTPBodyType): Promise<MessageResType> {
     //1.Kiểm tra email đã tồn tại trong DB hay chưa
     //Nếu đã tồn tại, thông báo cho người dùng email đã tồn tại
 
@@ -107,7 +107,9 @@ export class AuthService {
         },
       ])
     }
-    return verificationCode
+    return {
+      message: `Đã gửi mã OTP đến email ${body.email}`,
+    }
   }
 
   async login(body: LoginBodyType & { userAgent: string; ip: string }) {
